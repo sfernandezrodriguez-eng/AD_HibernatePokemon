@@ -172,6 +172,11 @@ public class Main {
                 ? adestradorService.listarAdestradorConQuery()
                 : adestradorService.listarAdestrador(), "adestradores.xml");
 
+        System.out.println("Exportar a táboa Pokedex a pokedex.xml.");
+        toXMLPokedex(consultas
+                ? pokedexService.listarPokedexConQuery() : pokedexService.listarPokedex(),
+                "pokedex.xml");
+
         System.out.println("Eliminar todos os pokemons.");
         if (consultas) {
             pokemonService.borrarTodosLosPokemonConQuery();
@@ -215,6 +220,31 @@ public class Main {
     private static void imprimirPokemon(List<Pokemon> pokemons) {
         for (Pokemon pokemon : pokemons) {
             System.out.println(pokemon);
+        }
+    }
+
+    private static void toXMLPokedex(List<Pokedex> entradas, String nomeFicheiro)
+            throws Exception {
+        try (BufferedWriter output = Files.newBufferedWriter(
+                Paths.get(nomeFicheiro), StandardCharsets.UTF_8)) {
+            XMLStreamWriter xml = XMLOutputFactory.newInstance().createXMLStreamWriter(output);
+            try {
+                xml.writeStartDocument("UTF-8", "1.0");
+                xml.writeStartElement("pokedex");
+                for (Pokedex entrada : entradas) {
+                    xml.writeStartElement("entrada");
+                    escreverElemento(xml, "id", String.valueOf(entrada.getId()));
+                    escreverElemento(xml, "nome", entrada.getNome());
+                    escreverElemento(xml, "peso",
+                            entrada.getPeso() == null ? "" : entrada.getPeso().toPlainString());
+                    escreverElemento(xml, "misc", entrada.getMisc());
+                    xml.writeEndElement();
+                }
+                xml.writeEndElement();
+                xml.writeEndDocument();
+            } finally {
+                xml.close();
+            }
         }
     }
 
