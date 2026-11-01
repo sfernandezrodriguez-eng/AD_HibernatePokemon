@@ -22,15 +22,58 @@ public class AdestradorService {
         }
     }
 
+    public Integer crearAdestradorConQuery(String nome, LocalDate nacemento) {
+        try (Session session = HibernateConfig.getSessionFactory().openSession()) {
+            Transaction transaction = session.beginTransaction();
+            Number id = (Number) session.createNativeQuery(
+                            "insert into adestrador (nome, nacemento) values (:nome, :nacemento) returning id")
+                    .setParameter("nome", nome)
+                    .setParameter("nacemento", nacemento)
+                    .getSingleResult();
+            transaction.commit();
+            return id.intValue();
+        }
+    }
+
     public Adestrador leerAdestrador(int id) {
         try (Session session = HibernateConfig.getSessionFactory().openSession()) {
             return session.get(Adestrador.class, id);
         }
     }
 
+    public Adestrador leerAdestradorConQuery(int id) {
+        try (Session session = HibernateConfig.getSessionFactory().openSession()) {
+            return session.createQuery("from Adestrador where id = :id", Adestrador.class)
+                    .setParameter("id", id)
+                    .uniqueResult();
+        }
+    }
+
     public List<Adestrador> listarAdestrador() {
         try (Session session = HibernateConfig.getSessionFactory().openSession()) {
             return session.createQuery("from Adestrador order by id", Adestrador.class).list();
+        }
+    }
+
+    public List<Adestrador> listarAdestradorConQuery() {
+        try (Session session = HibernateConfig.getSessionFactory().openSession()) {
+            return session.createQuery("from Adestrador order by id", Adestrador.class).list();
+        }
+    }
+
+    public void updateAdestradorConQuery(int id, String nome, LocalDate nacemento) {
+        try (Session session = HibernateConfig.getSessionFactory().openSession()) {
+            Transaction transaction = session.beginTransaction();
+            int actualizados = session.createQuery(
+                            "update Adestrador set nome = :nome, nacemento = :nacemento where id = :id")
+                    .setParameter("nome", nome)
+                    .setParameter("nacemento", nacemento)
+                    .setParameter("id", id)
+                    .executeUpdate();
+            if (actualizados == 0) {
+                throw new IllegalArgumentException("No existe un Adestrador con id " + id);
+            }
+            transaction.commit();
         }
     }
 
@@ -55,6 +98,15 @@ public class AdestradorService {
                 session.delete(Adestrador);
             }
             transaction.commit();
+        }
+    }
+
+    public int borrarTodosLosAdestradoresConQuery() {
+        try (Session session = HibernateConfig.getSessionFactory().openSession()) {
+            Transaction transaction = session.beginTransaction();
+            int eliminados = session.createQuery("delete from Adestrador").executeUpdate();
+            transaction.commit();
+            return eliminados;
         }
     }
 }

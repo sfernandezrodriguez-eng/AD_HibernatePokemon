@@ -23,15 +23,60 @@ public class PokedexService {
         }
     }
 
+    public Integer crearPokedexConQuery(String nome, BigDecimal peso, String misc) {
+        try (Session session = HibernateConfig.getSessionFactory().openSession()) {
+            Transaction transaction = session.beginTransaction();
+            Number id = (Number) session.createNativeQuery(
+                            "insert into pokedex (nome, peso, misc) values (:nome, :peso, :misc) returning id")
+                    .setParameter("nome", nome)
+                    .setParameter("peso", peso)
+                    .setParameter("misc", misc)
+                    .getSingleResult();
+            transaction.commit();
+            return id.intValue();
+        }
+    }
+
     public Pokedex leerPokedex(int id) {
         try (Session session = HibernateConfig.getSessionFactory().openSession()) {
             return session.get(Pokedex.class, id);
         }
     }
 
+    public Pokedex leerPokedexConQuery(int id) {
+        try (Session session = HibernateConfig.getSessionFactory().openSession()) {
+            return session.createQuery("from Pokedex where id = :id", Pokedex.class)
+                    .setParameter("id", id)
+                    .uniqueResult();
+        }
+    }
+
     public List<Pokedex> listarPokedex() {
         try (Session session = HibernateConfig.getSessionFactory().openSession()) {
             return session.createQuery("from Pokedex order by id", Pokedex.class).list();
+        }
+    }
+
+    public List<Pokedex> listarPokedexConQuery() {
+        try (Session session = HibernateConfig.getSessionFactory().openSession()) {
+            return session.createQuery("from Pokedex order by id", Pokedex.class).list();
+        }
+    }
+
+    public void updatePokedexConQuery(int id, String nome, BigDecimal peso, String misc) {
+        try (Session session = HibernateConfig.getSessionFactory().openSession()) {
+            Transaction transaction = session.beginTransaction();
+            int actualizados = session.createQuery(
+                            "update Pokedex set nome = :nome, peso = :peso, misc = :misc where id = :id")
+                    .setParameter("nome", nome)
+                    .setParameter("peso", peso)
+                    .setParameter("misc", misc)
+                    .setParameter("id", id)
+                    .executeUpdate();
+            if (actualizados == 0) {
+                throw new IllegalArgumentException("No existe una entrada Pokedex con id " + id);
+            }
+            transaction.commit();
         }
     }
 
@@ -61,6 +106,15 @@ public class PokedexService {
     }
 
     public int borrarTodosLosPokedex() {
+        try (Session session = HibernateConfig.getSessionFactory().openSession()) {
+            Transaction transaction = session.beginTransaction();
+            int eliminados = session.createQuery("delete from Pokedex").executeUpdate();
+            transaction.commit();
+            return eliminados;
+        }
+    }
+
+    public int borrarTodosLosPokedexConQuery() {
         try (Session session = HibernateConfig.getSessionFactory().openSession()) {
             Transaction transaction = session.beginTransaction();
             int eliminados = session.createQuery("delete from Pokedex").executeUpdate();
