@@ -5,6 +5,9 @@ import org.example.Models.Pokedex;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -53,7 +56,11 @@ public class PokedexService {
 
     public List<Pokedex> listarPokedex() {
         try (Session session = HibernateConfig.getSessionFactory().openSession()) {
-            return session.createQuery("from Pokedex order by id", Pokedex.class).list();
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<Pokedex> query = builder.createQuery(Pokedex.class);
+            Root<Pokedex> root = query.from(Pokedex.class);
+            query.select(root).orderBy(builder.asc(root.get("id")));
+            return session.createQuery(query).getResultList();
         }
     }
 
@@ -102,15 +109,6 @@ public class PokedexService {
                 session.delete(pokedex);
             }
             transaction.commit();
-        }
-    }
-
-    public int borrarTodosLosPokedex() {
-        try (Session session = HibernateConfig.getSessionFactory().openSession()) {
-            Transaction transaction = session.beginTransaction();
-            int eliminados = session.createQuery("delete from Pokedex").executeUpdate();
-            transaction.commit();
-            return eliminados;
         }
     }
 

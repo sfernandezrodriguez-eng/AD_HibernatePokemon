@@ -1,8 +1,6 @@
 package org.example.Config;
 
-import org.example.Models.Adestrador;
 import org.example.Models.Pokedex;
-import org.example.Models.Pokemon;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
@@ -34,8 +32,6 @@ public class HibernateConfig {
                     .build();
             return new org.hibernate.boot.MetadataSources(registry)
                     .addAnnotatedClass(Pokedex.class)
-                    .addAnnotatedClass(Adestrador.class)
-                    .addAnnotatedClass(Pokemon.class)
                     .buildMetadata()
                     .buildSessionFactory();
         } catch (Exception e) {
